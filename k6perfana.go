@@ -30,56 +30,64 @@ type K6Perfana struct {
 	CIBuildResultsUrl string `json:"CIBuildResultsUrl"`
 }
 
-func (perfanaSetup *K6Perfana) StartPerfana() (interface{}, error) {
-	fmt.Printf("Starting perfana")
-	perfanaSetup.Completed = false
+func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
+	perfanaConfig.Completed = false
 
-	perfanaSetup.Duration = os.Getenv("PERFANA_DURATION")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.Duration, "PERFANA_DURATION"); validationError != nil {
+	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.Duration, "PERFANA_DURATION"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.RampUp = os.Getenv("PERFANA_RAMPUP")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.RampUp, "PERFANA_RAMPUP"); validationError != nil {
+	perfanaConfig.RampUp = os.Getenv("PERFANA_RAMPUP")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.RampUp, "PERFANA_RAMPUP"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.TestEnvironment = os.Getenv("PERFANA_TEST_ENVIRONMENT")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.TestEnvironment, "PERFANA_TEST_ENVIRONMENT"); validationError != nil {
+	perfanaConfig.TestEnvironment = os.Getenv("PERFANA_TEST_ENVIRONMENT")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.TestEnvironment, "PERFANA_TEST_ENVIRONMENT"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.SystemUnderTest = os.Getenv("PERFANA_SYSTEM_UNDER_TEST")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.SystemUnderTest, "PERFANA_SYSTEM_UNDER_TEST"); validationError != nil {
+	perfanaConfig.SystemUnderTest = os.Getenv("PERFANA_SYSTEM_UNDER_TEST")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.SystemUnderTest, "PERFANA_SYSTEM_UNDER_TEST"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",");
-	if validationError := validateIfNilOrEmpty(perfanaSetup.Tags, "PERFANA_TAGS"); validationError != nil {
+	perfanaConfig.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",");
+	if validationError := validateIfNilOrEmpty(perfanaConfig.Tags, "PERFANA_TAGS"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.Version = os.Getenv("PERFANA_VERSION")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.Version, "PERFANA_VERSION"); validationError != nil {
+	perfanaConfig.Version = os.Getenv("PERFANA_VERSION")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.Version, "PERFANA_VERSION"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.TestRunId = os.Getenv("PERFANA_TEST_RUN_ID")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.TestRunId, "PERFANA_TEST_RUN_ID"); validationError != nil {
+	perfanaConfig.TestRunId = os.Getenv("PERFANA_TEST_RUN_ID")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.TestRunId, "PERFANA_TEST_RUN_ID"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.Workload = os.Getenv("PERFANA_WORKLOAD")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.Workload, "PERFANA_WORKLOAD"); validationError != nil {
+	perfanaConfig.Workload = os.Getenv("PERFANA_WORKLOAD")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.Workload, "PERFANA_WORKLOAD"); validationError != nil {
 		return nil, validationError;
 	}
 
-	perfanaSetup.CIBuildResultsUrl = os.Getenv("PERFANA_CI_BUILD_URL")
-	if validationError := validateIfNilOrEmpty(perfanaSetup.CIBuildResultsUrl, "PERFANA_CI_BUILD_URL"); validationError != nil {
+	perfanaConfig.CIBuildResultsUrl = os.Getenv("PERFANA_CI_BUILD_URL")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.CIBuildResultsUrl, "PERFANA_CI_BUILD_URL"); validationError != nil {
 		return nil, validationError;
 	}
 
-	return perfanaSetup.postToPerfana()
+	go perfanaConfig.scheduledPolling();
+
+	return perfanaConfig.postToPerfana()
+}
+
+func (perfanaConfig *K6Perfana) scheduledPolling() {
+	for perfanaConfig.Completed {
+		time.Sleep(30 * time.Second)
+		perfanaConfig.postToPerfana()
+	}
 }
 
 func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
