@@ -1,4 +1,4 @@
-module k6-perfana
+module xk6-k6perfana
 
 go 1.19
 
