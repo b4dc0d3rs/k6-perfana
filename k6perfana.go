@@ -3,6 +3,8 @@ package k6perfana
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -69,6 +71,10 @@ func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return nil, errors.New("Expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
