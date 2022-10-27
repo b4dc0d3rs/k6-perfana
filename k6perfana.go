@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -41,25 +40,25 @@ func (perfanaSetup *K6Perfana) StartPerfana() (interface{}, error) {
 	perfanaSetup.Workload = os.Getenv("PERFANA_WORKLOAD")
 	perfanaSetup.CIBuildResultsUrl = os.Getenv("PERFANA_CI_BUILD_URL")
 
-	return perfanaSetup.postToPerfana(), nil
+	return perfanaSetup.postToPerfana()
 }
 
 func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
 	perfanaConfig.Completed = true
-	return perfanaConfig.postToPerfana(), nil
+	return perfanaConfig.postToPerfana()
 }
 
-func (perfanaConfig *K6Perfana) postToPerfana() []byte {
+func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
 	PERFANA_URL := os.Getenv("PERFANA_URL")
 	PERFANA_API_TOKEN := os.Getenv("PERFANA_API_TOKEN")
 
 	reqBody, err := json.Marshal(perfanaConfig)
 	if err != nil {
-		print(err)
+		return nil, err
 	}
 	request, err := http.NewRequest("POST", PERFANA_URL + "/api/test", bytes.NewBuffer(reqBody))
 	if err != nil {
-		print(err)
+		return nil, err
 	}
 	request.Header.Set("Authorization", "Bearer " + PERFANA_API_TOKEN)
 	request.Header.Set("Content-Type", "application/json")
@@ -67,14 +66,14 @@ func (perfanaConfig *K6Perfana) postToPerfana() []byte {
 	client := &http.Client{Timeout: time.Second * 10}
 	resp, err := client.Do(request)
 	if err != nil {
-		log.Fatal("Error reading response. ", err)
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatal("Error reading body. ", err)
+		return nil, err
 	}
 
-	return body;
+	return body, nil;
 }
