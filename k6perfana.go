@@ -67,7 +67,8 @@ func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 
 	go perfanaConfig.scheduledPolling();
 
-	return perfanaConfig.postToPerfana()
+	startResponse, startError := perfanaConfig.postToPerfana();
+	return bytes.NewBuffer(startResponse).String(), startError
 }
 
 func (perfanaConfig *K6Perfana) scheduledPolling() {
@@ -79,7 +80,8 @@ func (perfanaConfig *K6Perfana) scheduledPolling() {
 
 func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
 	perfanaConfig.Completed = true
-	return perfanaConfig.postToPerfana()
+	stopResponse, stopError := perfanaConfig.postToPerfana();
+	return bytes.NewBuffer(stopResponse).String(), stopError
 }
 
 func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variableName string) []string {
