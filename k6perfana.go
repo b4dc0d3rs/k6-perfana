@@ -33,49 +33,36 @@ type K6Perfana struct {
 func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 	perfanaConfig.Completed = false
 
+	variablesFailed := []string{}
 	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.Duration, "PERFANA_DURATION"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
 
 	perfanaConfig.RampUp = os.Getenv("PERFANA_RAMPUP")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.RampUp, "PERFANA_RAMPUP"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.RampUp, "PERFANA_RAMPUP")
 
 	perfanaConfig.TestEnvironment = os.Getenv("PERFANA_TEST_ENVIRONMENT")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.TestEnvironment, "PERFANA_TEST_ENVIRONMENT"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.TestEnvironment, "PERFANA_TEST_ENVIRONMENT")
 
 	perfanaConfig.SystemUnderTest = os.Getenv("PERFANA_SYSTEM_UNDER_TEST")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.SystemUnderTest, "PERFANA_SYSTEM_UNDER_TEST"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.SystemUnderTest, "PERFANA_SYSTEM_UNDER_TEST")
 
 	perfanaConfig.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",");
-	if validationError := validateIfNilOrEmpty(perfanaConfig.Tags, "PERFANA_TAGS"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Tags, "PERFANA_TAGS")
 
 	perfanaConfig.Version = os.Getenv("PERFANA_BUNDLE_VERSION")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.Version, "PERFANA_BUNDLE_VERSION"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Version, "PERFANA_BUNDLE_VERSION")
 
 	perfanaConfig.TestRunId = os.Getenv("PERFANA_TEST_RUN_ID")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.TestRunId, "PERFANA_TEST_RUN_ID"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.TestRunId, "PERFANA_TEST_RUN_ID")
 
 	perfanaConfig.Workload = os.Getenv("PERFANA_WORKLOAD")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.Workload, "PERFANA_WORKLOAD"); validationError != nil {
-		return nil, validationError;
-	}
+	variablesFailed =  validateIfNilOrEmpty(variablesFailed, perfanaConfig.Workload, "PERFANA_WORKLOAD")
 
 	perfanaConfig.CIBuildResultsUrl = os.Getenv("PERFANA_BUILD_URL")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.CIBuildResultsUrl, "PERFANA_BUILD_URL"); validationError != nil {
-		return nil, validationError;
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.CIBuildResultsUrl, "PERFANA_BUILD_URL")
+
+	if len(variablesFailed) != 0 {
+		return nil, fmt.Errorf("Required environment variables `%s` aren't valid", strings.Join(variablesFailed[:], ","))
 	}
 
 	go perfanaConfig.scheduledPolling();
@@ -95,11 +82,11 @@ func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
 	return perfanaConfig.postToPerfana()
 }
 
-func validateIfNilOrEmpty(variable interface{}, variableName string) error {
+func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variableName string) []string {
 	if variable == nil || variable == "" {
-		return fmt.Errorf("Required environment variable `%s` is empty", variableName)
+		return append(failedVariables, variableName)
 	}
-	return nil
+	return failedVariables
 }
 
 func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
