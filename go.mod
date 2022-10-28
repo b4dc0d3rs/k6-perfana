@@ -23,3 +23,5 @@ require (
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	gopkg.in/guregu/null.v3 v3.3.0 // indirect
 )
+
+replace xk6-k6perfana => github.com/b4dc0d3rs/k6-perfana latest
