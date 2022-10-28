@@ -117,13 +117,13 @@ func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		return nil, fmt.Errorf("Failed to login to Perfana, expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
-	}
-
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 && resp.StatusCode != 201 {
+		return body, fmt.Errorf("Failed to login to Perfana, expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
 	}
 
 	return body, nil;
