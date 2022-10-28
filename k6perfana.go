@@ -58,8 +58,8 @@ func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 		return nil, validationError;
 	}
 
-	perfanaConfig.Version = os.Getenv("PERFANA_VERSION")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.Version, "PERFANA_VERSION"); validationError != nil {
+	perfanaConfig.Version = os.Getenv("PERFANA_BUNDLE_VERSION")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.Version, "PERFANA_BUNDLE_VERSION"); validationError != nil {
 		return nil, validationError;
 	}
 
@@ -73,8 +73,8 @@ func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 		return nil, validationError;
 	}
 
-	perfanaConfig.CIBuildResultsUrl = os.Getenv("PERFANA_CI_BUILD_URL")
-	if validationError := validateIfNilOrEmpty(perfanaConfig.CIBuildResultsUrl, "PERFANA_CI_BUILD_URL"); validationError != nil {
+	perfanaConfig.CIBuildResultsUrl = os.Getenv("PERFANA_BUILD_URL")
+	if validationError := validateIfNilOrEmpty(perfanaConfig.CIBuildResultsUrl, "PERFANA_BUILD_URL"); validationError != nil {
 		return nil, validationError;
 	}
 
@@ -125,7 +125,7 @@ func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		return nil, fmt.Errorf("Expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
+		return nil, fmt.Errorf("Failed to login to Perfana, expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
