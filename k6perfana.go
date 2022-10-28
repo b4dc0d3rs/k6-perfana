@@ -34,6 +34,10 @@ func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 	perfanaConfig.Completed = false
 
 	variablesFailed := []string{}
+
+	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_URL")
+	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_API_TOKEN")
+
 	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
 
