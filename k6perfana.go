@@ -30,7 +30,7 @@ type K6Perfana struct {
 	CIBuildResultsUrl string `json:"CIBuildResultsUrl"`
 }
 
-func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
+func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	perfanaConfig.Completed = false
 
 	variablesFailed := []string{}
@@ -72,7 +72,7 @@ func (perfanaConfig *K6Perfana) StartPerfana() (interface{}, error) {
 	go perfanaConfig.scheduledPolling();
 
 	startResponse, startError := perfanaConfig.postToPerfana();
-	return bytes.NewBuffer(startResponse).String(), startError
+	return startResponse, startError
 }
 
 func (perfanaConfig *K6Perfana) scheduledPolling() {
@@ -85,7 +85,7 @@ func (perfanaConfig *K6Perfana) scheduledPolling() {
 func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
 	perfanaConfig.Completed = true
 	stopResponse, stopError := perfanaConfig.postToPerfana();
-	return bytes.NewBuffer(stopResponse).String(), stopError
+	return stopResponse, stopError
 }
 
 func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variableName string) []string {
@@ -95,7 +95,7 @@ func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variab
 	return failedVariables
 }
 
-func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
+func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	PERFANA_URL := os.Getenv("PERFANA_URL")
 	PERFANA_API_TOKEN := os.Getenv("PERFANA_API_TOKEN")
 
@@ -122,9 +122,9 @@ func (perfanaConfig *K6Perfana) postToPerfana() ([]byte, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		return body, fmt.Errorf("Failed to login to Perfana, expected status was is 200 or 201, but got " + fmt.Sprint(resp.StatusCode))
-	}
+	var response = make(map[string]string)
+	response["responseCode"] = fmt.Sprint(resp.StatusCode)
+	response["body"] = bytes.NewBuffer(body).String()
 
-	return body, nil;
+	return response, nil;
 }
