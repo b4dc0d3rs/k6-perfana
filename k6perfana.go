@@ -69,6 +69,8 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 		return nil, fmt.Errorf("Required environment variables `%s` aren't valid", strings.Join(variablesFailed[:], ","))
 	}
 
+	fmt.Println(perfanaConfig)
+
 	go perfanaConfig.scheduledPolling();
 
 	startResponse, startError := perfanaConfig.postToPerfana();
