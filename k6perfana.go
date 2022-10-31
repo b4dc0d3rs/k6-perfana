@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,8 +20,8 @@ func init() {
 
 type K6Perfana struct {
 	Completed bool `json:"completed"`
-	Duration string `json:"duration"`
-	RampUp string `json:"rampUp"`
+	Duration int `json:"duration"`
+	RampUp int `json:"rampUp"`
 	TestEnvironment string `json:"testEnvironment"`
 	SystemUnderTest string `json:"systemUnderTest"`
 	Tags []string `json:"tags"`
@@ -38,10 +39,10 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_URL")
 	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_API_TOKEN")
 
-	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
+	perfanaConfig.Duration, _= strconv.Atoi(os.Getenv("PERFANA_DURATION"))
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
 
-	perfanaConfig.RampUp = os.Getenv("PERFANA_RAMPUP")
+	perfanaConfig.RampUp, _ = strconv.Atoi(os.Getenv("PERFANA_RAMPUP"))
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.RampUp, "PERFANA_RAMPUP")
 
 	perfanaConfig.TestEnvironment = os.Getenv("PERFANA_TEST_ENVIRONMENT")
@@ -68,8 +69,6 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	if len(variablesFailed) != 0 {
 		return nil, fmt.Errorf("Required environment variables `%s` aren't valid", strings.Join(variablesFailed[:], ","))
 	}
-
-	fmt.Println(perfanaConfig)
 
 	go perfanaConfig.scheduledPolling();
 
