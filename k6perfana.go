@@ -123,7 +123,7 @@ func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	}
 
 	var response = make(map[string]string)
-	response["responseCode"] = fmt.Sprint(resp.StatusCode)
+	response["statusCode"] = fmt.Sprint(resp.StatusCode)
 	response["body"] = bytes.NewBuffer(body).String()
 
 	return response, nil;
