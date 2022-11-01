@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -20,8 +19,8 @@ func init() {
 
 type K6Perfana struct {
 	Completed bool `json:"completed"`
-	Duration int `json:"duration"`
-	RampUp int `json:"rampUp"`
+	Duration string `json:"duration"`
+	RampUp string `json:"rampUp"`
 	TestEnvironment string `json:"testEnvironment"`
 	SystemUnderTest string `json:"systemUnderTest"`
 	Tags []string `json:"tags"`
@@ -39,10 +38,10 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_URL")
 	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_API_TOKEN")
 
-	perfanaConfig.Duration, _= strconv.Atoi(os.Getenv("PERFANA_DURATION"))
+	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
 
-	perfanaConfig.RampUp, _ = strconv.Atoi(os.Getenv("PERFANA_RAMPUP"))
+	perfanaConfig.RampUp = os.Getenv("PERFANA_RAMPUP")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.RampUp, "PERFANA_RAMPUP")
 
 	perfanaConfig.TestEnvironment = os.Getenv("PERFANA_TEST_ENVIRONMENT")
@@ -78,8 +77,10 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 
 func (perfanaConfig *K6Perfana) scheduledPolling() {
 	for perfanaConfig.Completed {
-		time.Sleep(30 * time.Second)
-		perfanaConfig.postToPerfana()
+		time.Sleep(10 * time.Second)
+		if perfanaConfig.Completed {
+			perfanaConfig.postToPerfana()
+		}
 	}
 }
 
@@ -123,7 +124,8 @@ func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 		return nil, err
 	}
 
-	var response = make(map[string]string)
+	response := make(map[string]string)
+	response["perfanaPayload"] = bytes.NewBuffer(reqBody).String()
 	response["statusCode"] = fmt.Sprint(resp.StatusCode)
 	response["body"] = bytes.NewBuffer(body).String()
 
