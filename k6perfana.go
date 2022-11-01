@@ -99,7 +99,7 @@ func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variab
 
 func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	PERFANA_URL := os.Getenv("PERFANA_URL")
-	PERFANA_API_TOKEN := os.Getenv("PERFANA_API_TOKEN")
+	PERFANA_API_TOKEN := os.Getenv("PERFANA_TOKEN")
 
 	reqBody, err := json.Marshal(perfanaConfig)
 	if err != nil {
