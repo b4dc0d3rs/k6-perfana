@@ -18,16 +18,16 @@ func init() {
 }
 
 type K6Perfana struct {
-	Completed bool `json:"completed"`
-	Duration string `json:"duration"`
-	RampUp string `json:"rampUp"`
-	TestEnvironment string `json:"testEnvironment"`
-	SystemUnderTest string `json:"systemUnderTest"`
-	Tags []string `json:"tags"`
-	Version string `json:"version"`
-	TestRunId string `json:"testRunId"`
-	Workload string `json:"workload"`
-	CIBuildResultsUrl string `json:"CIBuildResultsUrl"`
+	Completed         bool     `json:"completed"`
+	Duration          string   `json:"duration"`
+	RampUp            string   `json:"rampUp"`
+	TestEnvironment   string   `json:"testEnvironment"`
+	SystemUnderTest   string   `json:"systemUnderTest"`
+	Tags              []string `json:"tags"`
+	Version           string   `json:"version"`
+	TestRunId         string   `json:"testRunId"`
+	Workload          string   `json:"workload"`
+	CIBuildResultsUrl string   `json:"CIBuildResultsUrl"`
 }
 
 func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
@@ -50,7 +50,7 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	perfanaConfig.SystemUnderTest = os.Getenv("PERFANA_SYSTEM_UNDER_TEST")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.SystemUnderTest, "PERFANA_SYSTEM_UNDER_TEST")
 
-	perfanaConfig.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",");
+	perfanaConfig.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Tags, "PERFANA_TAGS")
 
 	perfanaConfig.Version = os.Getenv("PERFANA_BUNDLE_VERSION")
@@ -60,7 +60,7 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.TestRunId, "PERFANA_TEST_RUN_ID")
 
 	perfanaConfig.Workload = os.Getenv("PERFANA_WORKLOAD")
-	variablesFailed =  validateIfNilOrEmpty(variablesFailed, perfanaConfig.Workload, "PERFANA_WORKLOAD")
+	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Workload, "PERFANA_WORKLOAD")
 
 	perfanaConfig.CIBuildResultsUrl = os.Getenv("PERFANA_BUILD_URL")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.CIBuildResultsUrl, "PERFANA_BUILD_URL")
@@ -69,15 +69,15 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 		return nil, fmt.Errorf("Required environment variables `%s` aren't valid", strings.Join(variablesFailed[:], ","))
 	}
 
-	go perfanaConfig.scheduledPolling();
+	go perfanaConfig.scheduledPolling()
 
-	startResponse, startError := perfanaConfig.postToPerfana();
+	startResponse, startError := perfanaConfig.postToPerfana()
 	return startResponse, startError
 }
 
 func (perfanaConfig *K6Perfana) scheduledPolling() {
 	for perfanaConfig.Completed {
-		time.Sleep(10 * time.Second)
+		time.Sleep(30 * time.Second)
 		if perfanaConfig.Completed {
 			perfanaConfig.postToPerfana()
 		}
@@ -86,7 +86,7 @@ func (perfanaConfig *K6Perfana) scheduledPolling() {
 
 func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
 	perfanaConfig.Completed = true
-	stopResponse, stopError := perfanaConfig.postToPerfana();
+	stopResponse, stopError := perfanaConfig.postToPerfana()
 	return stopResponse, stopError
 }
 
@@ -105,11 +105,11 @@ func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequest("POST", PERFANA_URL + "/api/test", bytes.NewBuffer(reqBody))
+	request, err := http.NewRequest("POST", PERFANA_URL+"/api/test", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("Authorization", "Bearer " + PERFANA_API_TOKEN)
+	request.Header.Set("Authorization", "Bearer "+PERFANA_API_TOKEN)
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: time.Second * 10}
@@ -129,5 +129,5 @@ func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	response["statusCode"] = fmt.Sprint(resp.StatusCode)
 	response["body"] = bytes.NewBuffer(body).String()
 
-	return response, nil;
+	return response, nil
 }
