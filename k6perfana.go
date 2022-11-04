@@ -36,7 +36,7 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 	variablesFailed := []string{}
 
 	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_URL")
-	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_API_TOKEN")
+	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_TOKEN")
 
 	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
@@ -99,7 +99,7 @@ func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variab
 
 func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	PERFANA_URL := os.Getenv("PERFANA_URL")
-	PERFANA_API_TOKEN := os.Getenv("PERFANA_TOKEN")
+	PERFANA_TOKEN := os.Getenv("PERFANA_TOKEN")
 
 	reqBody, err := json.Marshal(perfanaConfig)
 	if err != nil {
@@ -109,7 +109,7 @@ func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("Authorization", "Bearer "+PERFANA_API_TOKEN)
+	request.Header.Set("Authorization", "Bearer "+PERFANA_TOKEN)
 	request.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: time.Second * 10}
