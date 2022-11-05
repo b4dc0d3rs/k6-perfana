@@ -17,6 +17,9 @@ func init() {
 	modules.Register("k6/x/k6perfana", new(K6Perfana))
 }
 
+var PERFANA_URL = os.Getenv("PERFANA_URL")
+var PERFANA_TOKEN = os.Getenv("PERFANA_TOKEN")
+
 type K6Perfana struct {
 	Completed         bool     `json:"completed"`
 	Duration          string   `json:"duration"`
@@ -84,7 +87,7 @@ func (perfanaConfig *K6Perfana) scheduledPolling() {
 	}
 }
 
-func (perfanaConfig *K6Perfana) StopPerfana() (interface{}, error) {
+func (perfanaConfig *K6Perfana) StopPerfana() (map[string]string, error) {
 	perfanaConfig.Completed = true
 	stopResponse, stopError := perfanaConfig.postToPerfana()
 	return stopResponse, stopError
@@ -98,8 +101,6 @@ func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variab
 }
 
 func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
-	PERFANA_URL := os.Getenv("PERFANA_URL")
-	PERFANA_TOKEN := os.Getenv("PERFANA_TOKEN")
 
 	reqBody, err := json.Marshal(perfanaConfig)
 	if err != nil {

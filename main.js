@@ -7,7 +7,6 @@ export default function () {
   console.log(`startResponse ${startResponse.statusCode}`);
   console.log(`startResponse ${startResponse.body}`);
 
-
   sleep(66)
 
   const stopResponse = k6perfana.stopPerfana();
