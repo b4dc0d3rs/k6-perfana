@@ -38,8 +38,12 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 
 	variablesFailed := []string{}
 
-	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_URL")
-	validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_TOKEN")
+	if err := throwIfEmpty(PERFANA_URL, "PERFANA_URL"); err != nil {
+		return nil, err
+	}
+	if err := throwIfEmpty(PERFANA_TOKEN, "PERFANA_TOKEN"); err != nil {
+		return nil, err
+	}
 
 	perfanaConfig.Duration = os.Getenv("PERFANA_DURATION")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Duration, "PERFANA_DURATION")
@@ -98,6 +102,13 @@ func validateIfNilOrEmpty(failedVariables []string, variable interface{}, variab
 		return append(failedVariables, variableName)
 	}
 	return failedVariables
+}
+
+func throwIfEmpty(variable interface{}, variableName string) error {
+	if variable == nil || variable == "" {
+		return fmt.Errorf("Required variable %s is empty", variableName)
+	}
+	return nil
 }
 
 func (perfanaConfig *K6Perfana) postToPerfana() (map[string]string, error) {
