@@ -31,6 +31,7 @@ type K6Perfana struct {
 	TestRunId         string   `json:"testRunId"`
 	Workload          string   `json:"workload"`
 	CIBuildResultsUrl string   `json:"CIBuildResultsUrl"`
+	Annotations       string   `json:"annotations"`
 }
 
 func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
@@ -59,6 +60,8 @@ func (perfanaConfig *K6Perfana) StartPerfana() (map[string]string, error) {
 
 	perfanaConfig.Tags = strings.Split(os.Getenv("PERFANA_TAGS"), ",")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Tags, "PERFANA_TAGS")
+
+	perfanaConfig.Annotations =os.Getenv("PERFANA_ANNOTATIONS")
 
 	perfanaConfig.Version = os.Getenv("PERFANA_BUNDLE_VERSION")
 	variablesFailed = validateIfNilOrEmpty(variablesFailed, perfanaConfig.Version, "PERFANA_BUNDLE_VERSION")
